@@ -1,13 +1,12 @@
 require('dotenv').config()
-console.log("MESSAGE_LOGGER_ENABLED=" + (process.env.MESSAGE_LOGGER_ENABLED ?? false))
+console.log("MESSAGE_LOGGER_ENABLED=" + (process.env.MESSAGE_LOGGER_ENABLED ?? true))
 
 import {AedesPublishPacket, Client, Subscription} from "aedes";
 import * as protobuf from "protobufjs";
-//var { protobuf } = require('protobufjs');
 
 console.log((new Date()).toISOString() + ":", "Starting keyser ...")
 console.log((new Date()).toISOString() + ":", "Initializing protobuf ...")
-protobuf.load("datastructs.proto", (error, root) => {
+protobuf.load("../datastructs.proto", (error, root) => {
   if (error) {
     console.error((new Date()).toISOString() + ":", "Error loading protobuf:", error)
     throw error;
@@ -21,6 +20,9 @@ protobuf.load("datastructs.proto", (error, root) => {
   const { createServer } = require('aedes-server-factory')
   const wsPort = 1883
   const httpPort = 1884
+
+  let dataProcessingEnabled = false;
+  const processData = (val: number[]) => val.reduce((partialSum, a) => partialSum + a,0);
 
   const wsServer = createServer(aedes, { ws: true })
   const httpServer = createServer(aedes)
@@ -55,8 +57,23 @@ protobuf.load("datastructs.proto", (error, root) => {
   })
 
   // fired when a message is published
-  if (process.env.MESSAGE_LOGGER_ENABLED ?? false)
+  if (process.env.MESSAGE_LOGGER_ENABLED ?? true)
     aedes.on('publish', async (packet: AedesPublishPacket, client: Client) => {
       console.log((new Date()).toISOString() + ":", 'Client \x1b[31m' + (client ? client.id : 'BROKER_' + aedes.id) + '\x1b[0m has published a packet of size', packet.payload.length, 'on', packet.topic, 'to broker', aedes.id)
     })
+  
+  aedes.on('publish', async (packet: AedesPublishPacket, client: Client) => {
+    if (packet.topic == "myapp/configuration") {
+      const msg = JSON.parse(packet.payload.toString());
+      msg.isUpdate ?? (dataProcessingEnabled = msg.state);
+    }
+    if (packet.topic == "myapp/dataset") {
+      const msg = JSON.parse(packet.payload.toString());
+      const res = {
+        uuid : msg.uuid,
+        data: processData(msg.data)
+      };
+      client.publish(`server/processed` ,Buffer.from(JSON.stringify(res)));
+    }
+  })
 });
