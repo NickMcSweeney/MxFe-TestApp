@@ -21,9 +21,6 @@ protobuf.load("../datastructs.proto", (error, root) => {
   const wsPort = 1883
   const httpPort = 1884
 
-  let dataProcessingEnabled = false;
-  const processData = (val: number[]) => val.reduce((partialSum, a) => partialSum + a,0);
-
   const wsServer = createServer(aedes, { ws: true })
   const httpServer = createServer(aedes)
 
@@ -60,20 +57,5 @@ protobuf.load("../datastructs.proto", (error, root) => {
   if (process.env.MESSAGE_LOGGER_ENABLED ?? true)
     aedes.on('publish', async (packet: AedesPublishPacket, client: Client) => {
       console.log((new Date()).toISOString() + ":", 'Client \x1b[31m' + (client ? client.id : 'BROKER_' + aedes.id) + '\x1b[0m has published a packet of size', packet.payload.length, 'on', packet.topic, 'to broker', aedes.id)
-    })
-  
-  aedes.on('publish', async (packet: AedesPublishPacket, client: Client) => {
-    if (packet.topic == "myapp/configuration") {
-      const msg = JSON.parse(packet.payload.toString());
-      msg.isUpdate ?? (dataProcessingEnabled = msg.state);
-    }
-    if (packet.topic == "myapp/dataset") {
-      const msg = JSON.parse(packet.payload.toString());
-      const res = {
-        uuid : msg.uuid,
-        data: processData(msg.data)
-      };
-      client.publish(`server/processed` ,Buffer.from(JSON.stringify(res)));
-    }
-  })
+    })  
 });
