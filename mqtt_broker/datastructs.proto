@@ -1,0 +1,18 @@
+syntax = "proto3";
+
+package proto;
+
+message DataSet {
+  string uuid = 1;
+  repeated double data = 2;
+}
+
+message Configuration {
+  enum State {
+    UNAVAILABLE = 0;
+    AVAILABLE = 1;
+    ACTIVE = 2;
+  }
+  bool is_update = 1;
+  State state = 2;
+}
