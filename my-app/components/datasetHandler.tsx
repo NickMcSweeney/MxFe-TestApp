@@ -26,6 +26,7 @@ export default function DatasetHandler() {
     <div>
       <p>Press button to load dataset into application</p>
       <p>There is currently {dataLoaded ? "some" : "no"} data loaded.</p>
+
       <p>{dataProcessed ? "We have analysed the data and the result is:" : ""}</p><p>{dataResult}</p>
       <button onClick={syncData}>Load Data</button>
     </div>

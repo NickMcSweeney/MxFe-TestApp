@@ -37,6 +37,11 @@ This application sends data on the dataset topic, configuration on the configura
 
 _We need our data to be processed as soon as it is loaded, and then displayed as soon as it is available. Data processing requires *enabling* the data processing instance and then data can be sent to be processed._
 
+
+dataprocessing handler react app
+sync data syncData handler file
+
+
 #### requirements
 
 - [ ] data sent to data processing server.
