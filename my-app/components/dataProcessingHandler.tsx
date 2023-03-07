@@ -19,8 +19,6 @@ export default function DataProcessingHandler() {
   const loadResult = (res: number) => dispatch(setProcResult(res));
   const loadServerOnline = (data: boolean) => dispatch(setServerState(data));
 
-  // check server and set store var
-
   useEffect(() => {
     // Publish configuration message here
     const client = mqtt.connect(process.env.NEXT_PUBLIC_MQTT_SERVER
@@ -39,23 +37,22 @@ export default function DataProcessingHandler() {
         Buffer.from(JSON.stringify(msg)),
         { qos: 2 }
       );
-      loadServerOnline(true);
+      // idea to make to have a toggle for ServerOnline status
+      // loadServerOnline(true);
     });
 
     return () => {
       client.end();
-      loadServerOnline(false);
+      // loadServerOnline(false);
     };
 
-  }, [dataLoaded, loadServerOnline]);
+  }, [dataLoaded]);
 
   useEffect(() => {
 
     if (dataLoaded) {
       const client = mqtt.connect(process.env.NEXT_PUBLIC_MQTT_SERVER
         ?? "tcp://localhost:1883", { clientId: `myapp-message-listener` });
-
-      // subscribe server/configuration && server/result
 
       client.subscribe('server/status', (err) => {
         if (err) {
@@ -66,7 +63,7 @@ export default function DataProcessingHandler() {
       })
 
       client.on('message', (topic, message) => {
-        console.log(`Received message on myapp/configuration ${topic}: ${message}`);
+        console.log(`Received message on server/status ${topic}: ${message}`);
       })
 
       const msgToSend = {
@@ -83,18 +80,14 @@ export default function DataProcessingHandler() {
       })
 
       client.on('message', (topic, message) => {
-        // put result here
         const resultServer = JSON.parse(message.toString());
-        console.log(resultServer);
         loadResult(resultServer.data);
-        console.log(`Received message on topic ${topic}: ${message}`);
-
       });
       return () => {
         client.end();
       };
     }
-  }, [dataLoaded, dataset]);
+  }, [dataLoaded, dataset, loadResult]);
 
   return (
     <div></div>
