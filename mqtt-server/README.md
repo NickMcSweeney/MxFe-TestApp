@@ -1,3 +1,2 @@
 #### setup with `yarn install`
-
-#### run mqtt server with `node src/index.ts`
+#### run mqtt server with `yarn dev`
