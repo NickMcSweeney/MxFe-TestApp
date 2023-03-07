@@ -4,7 +4,7 @@
     // same as our --compilerOptions flag and our TS_NODE_COMPILER_OPTIONS environment variable
     "compilerOptions": {
       "module": "commonjs",
-      "outDir": "dist"
+      "outDir": "dist",
     }
   },
   "compilerOptions": {
@@ -25,7 +25,7 @@
     "skipLibCheck": true,
     "strict": true,
     "target": "esnext",
-    "outDir": "dist"
+    "outDir": "dist",
   },
   "exclude": ["src/node_modules"],
   "include": ["src/index.ts", "**/*.ts", "**/*.tsx"],
